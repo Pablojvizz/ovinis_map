@@ -164,12 +164,12 @@
             const listItem = document.createElement('li');
             listItem.textContent = loc.name;
             listItem.className = 'p-2 mb-2 rounded-md destination-item text-sm text-gray-700 hover:bg-gray-200';
-            listItem.onclick = () => { map.flyTo(loc.coords, 14); };
+            listItem.onclick = () => { map.flyTo(loc.coords, 18); };
             listElement.appendChild(listItem);
 
             // Create map marker
             const marker = L.marker(loc.coords, { pane: 'markerPane' });
-            const popupContent = `<b>${loc.name}</b><br><a href="${loc.link}" target="_blank" rel="noopener noreferrer">Ver Noticia</a>`;
+            const popupContent = `<b>${loc.name}</b><br><a href="https://www.google.com/maps/dir/La+Br%C3%BAjula+Hostel+y+Club+Social/${loc.coords}/@-31.7272354,-65.0056258,1241m/data=!3m1!1e3!4m9!4m8!1m5!1m1!1s0x942d27ab14f282c9:0xc7e876d27bc68a47!2m2!1d-65.0127905!2d-31.7248017!1m0!3e0?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Como llegar</a>`;
             marker.bindPopup(popupContent);
             markersLayer.addLayer(marker); // Add marker to the feature group
         });
@@ -203,9 +203,9 @@
 
         // Add ESRI Satellite Layer (Overlay, Semi-Transparent)
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 90,
             attribution: 'Tiles &copy; Esri',
-            opacity: 0.4 // Adjust opacity as needed
+            opacity: 0.9 // Adjust opacity as needed
         }).addTo(map);
 
         // Add the markers layer group to the map
@@ -218,7 +218,7 @@
         // --- REMOVED File Input Event Listener ---
 
         // --- ADDED: Fetch CSV data automatically ---
-        const csvFilePath = './listado_ovnis.csv'; // Relative path to your CSV file
+        const csvFilePath = './balnearios_mina_clavero.csv'; // Relative path to your CSV file
                                                    // Make sure the filename is correct!
 
         if(statusDiv) statusDiv.textContent = 'Cargando datos desde archivo...';
