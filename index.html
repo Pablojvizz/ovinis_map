@@ -191,22 +191,32 @@
         map = L.map('map').setView([-38.416, -63.616], 5); // Centered on Argentina
 
         // Add IGN WMS Layer (Base)
-        const ignWmsUrl = 'https://wms.ign.gob.ar/geoserver/ows';
-        const ignLayerName = 'capabaseargenmap';
-        const ignWmsLayer = L.tileLayer.wms(ignWmsUrl, {
-            layers: ignLayerName,
-            format: 'image/png',
-            transparent: false,
-            version: '1.3.0',
-            attribution: '&copy; <a href="https://www.ign.gob.ar/">IGN Argentina</a>'
+        //const ignWmsUrl = 'https://wms.ign.gob.ar/geoserver/wms?';
+        //const ignLayerName = 'departamentos,rios,ciudades,limites_provinciales,limites_nacionales,carreteras';
+        //const ignWmsLayer = L.tileLayer.wms(ignWmsUrl, {
+        //    layers: ignLayerName,
+        //    format: 'image/png',
+        //    transparent: false,
+        //    version: '1.3.0',
+        //    attribution: '&copy; <a href="https://www.ign.gob.ar/">IGN Argentina</a>'
+        //}).addTo(map);
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
         // Add ESRI Satellite Layer (Overlay, Semi-Transparent)
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 90,
             attribution: 'Tiles &copy; Esri',
-            opacity: 0.9 // Adjust opacity as needed
-        }).addTo(map);
+        }); // NO .addTo(map) - don't add it by default
+
+        // Create layer control to toggle between views
+        const baseLayers = {
+            'Mapa (con calles)': osmLayer,
+            'Satélite': satelliteLayer
+        };
+        L.control.layers(baseLayers).addTo(map);
 
         // Add the markers layer group to the map
         markersLayer.addTo(map);
