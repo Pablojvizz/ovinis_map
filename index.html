@@ -26,14 +26,22 @@
         .category-title {
             font-weight: 700;
             font-size: 0.95rem;
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+            padding: 0.75rem 0.5rem;
             border-bottom: 2px solid #e5e7eb;
             color: #1f2937;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
+            background: #f9fafb;
+            border-radius: 0.375rem;
+            transition: all 0.3s ease;
+            list-style: none !important;
+        }
+        .category-title:hover {
+            background: #f3f4f6;
         }
         .category-icon {
             font-size: 1.25rem;
@@ -41,6 +49,27 @@
         .category-balneario .category-icon { color: #0ea5e9; }
         .category-restobar .category-icon { color: #f59e0b; }
         .category-servicio .category-icon { color: #10b981; }
+        .category-toggle {
+            margin-left: auto;
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+        .category-title.collapsed .category-toggle {
+            transform: rotate(-90deg);
+        }
+        .category-items {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+        .category-items.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        .destination-item {
+            list-style: none !important;
+        }
         .destination-item.balneario {
             border-left-color: #0ea5e9;
         }
@@ -414,19 +443,22 @@
             if (categorized[cat.key].length > 0) {
                 // Agregar título de categoría
                 const categoryHeader = document.createElement('li');
-                categoryHeader.className = `category-title category-${cat.key}`;
-                categoryHeader.innerHTML = `<span class="category-icon">${cat.icon}</span> ${cat.title} (${categorized[cat.key].length})`;
-                categoryHeader.style.listStyle = 'none';
+                categoryHeader.className = `category-title category-${cat.key} collapsed`;
+                categoryHeader.innerHTML = `<span class="category-icon">${cat.icon}</span> ${cat.title} (${categorized[cat.key].length}) <span class="category-toggle">▼</span>`;
                 listElement.appendChild(categoryHeader);
+
+                // Crear contenedor para los items de la categoría
+                const categoryContainer = document.createElement('div');
+                categoryContainer.className = `category-items collapsed`;
+                categoryContainer.setAttribute('data-category', cat.key);
 
                 // Agregar items de la categoría
                 categorized[cat.key].forEach(loc => {
                     const listItem = document.createElement('li');
                     listItem.textContent = loc.name;
                     listItem.className = `p-2 mb-2 rounded-md destination-item ${loc.tipo} text-sm text-gray-700`;
-                    listItem.style.listStyle = 'none';
                     listItem.onclick = () => { map.flyTo(loc.coords, 18); };
-                    listElement.appendChild(listItem);
+                    categoryContainer.appendChild(listItem);
 
                     // Create map marker with color based on type
                     const markerColor = {
@@ -442,6 +474,28 @@
                     const popupContent = `<b>${loc.name}</b><br><strong>Tipo:</strong> ${loc.tipo}<br><b>${loc.link}</b><br><a href="https://www.google.com/maps/dir/La+Br%C3%BAjula+Hostel+y+Club+Social/${loc.coords}/@-31.7272354,-65.0056258,1241m/data=!3m1!1e3!4m9!4m8!1m5!1m1!1s0x942d27ab14f282c9:0xc7e876d27bc68a47!2m2!1d-65.0127905!2d-31.7248017!1m0!3e0?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Como llegar</a>`;
                     marker.bindPopup(popupContent);
                     markersLayer.addLayer(marker);
+                });
+
+                // Agregar el contenedor al listElement
+                listElement.appendChild(categoryContainer);
+
+                // Event listener para expandir/colapsar
+                categoryHeader.addEventListener('click', () => {
+                    // Cerrar todas las otras categorías
+                    document.querySelectorAll('.category-items').forEach(item => {
+                        if (item !== categoryContainer) {
+                            item.classList.add('collapsed');
+                        }
+                    });
+                    document.querySelectorAll('.category-title').forEach(title => {
+                        if (title !== categoryHeader) {
+                            title.classList.add('collapsed');
+                        }
+                    });
+
+                    // Alternar la categoría actual
+                    categoryContainer.classList.toggle('collapsed');
+                    categoryHeader.classList.toggle('collapsed');
                 });
             }
         });
