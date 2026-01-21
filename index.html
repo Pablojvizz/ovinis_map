@@ -87,6 +87,28 @@
             padding: 2px 5px;
             border-radius: 3px;
         }
+        /* Custom marker styles */
+        .custom-marker {
+            background-size: 100%;
+            width: 32px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .marker-balneario {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><path d="M12 1c-6 0-11 5-11 11 0 8 11 18 11 18s11-10 11-18c0-6-5-11-11-11z" fill="%230ea5e9" stroke="%23075985" stroke-width="0.5"/></svg>');
+        }
+        .marker-restobar {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><path d="M12 1c-6 0-11 5-11 11 0 8 11 18 11 18s11-10 11-18c0-6-5-11-11-11z" fill="%23f59e0b" stroke="%23b45309" stroke-width="0.5"/></svg>');
+        }
+        .marker-servicio {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><path d="M12 1c-6 0-11 5-11 11 0 8 11 18 11 18s11-10 11-18c0-6-5-11-11-11z" fill="%2310b981" stroke="%23065f46" stroke-width="0.5"/></svg>');
+        }
          /* Ensure layout takes full viewport height */
         html, body {
             height: 100%;
@@ -461,15 +483,18 @@
                     categoryContainer.appendChild(listItem);
 
                     // Create map marker with color based on type
-                    const markerColor = {
-                        'balneario': '#0ea5e9',
-                        'restobar': '#f59e0b',
-                        'servicio': '#10b981'
-                    }[loc.tipo] || '#3b82f6';
+                    const markerIconClass = `marker-${loc.tipo}`;
+                    const customIcon = L.divIcon({
+                        className: `custom-marker ${markerIconClass}`,
+                        iconSize: [32, 40],
+                        iconAnchor: [16, 40],
+                        popupAnchor: [0, -40]
+                    });
 
                     const marker = L.marker(loc.coords, { 
                         pane: 'markerPane',
-                        title: loc.name
+                        title: loc.name,
+                        icon: customIcon
                     });
                     const popupContent = `<b>${loc.name}</b><br><strong>Tipo:</strong> ${loc.tipo}<br><b>${loc.link}</b><br><a href="https://www.google.com/maps/dir/La+Br%C3%BAjula+Hostel+y+Club+Social/${loc.coords}/@-31.7272354,-65.0056258,1241m/data=!3m1!1e3!4m9!4m8!1m5!1m1!1s0x942d27ab14f282c9:0xc7e876d27bc68a47!2m2!1d-65.0127905!2d-31.7248017!1m0!3e0?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Como llegar</a>`;
                     marker.bindPopup(popupContent);
