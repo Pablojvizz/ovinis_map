@@ -14,10 +14,13 @@
         /* Custom styles for list items */
         .destination-item {
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-left: 3px solid transparent;
         }
         .destination-item:hover {
             background-color: #e5e7eb; /* gray-200 */
+            border-left-color: #3b82f6; /* blue-500 */
+            transform: translateX(4px);
         }
         /* Ensure Leaflet attribution is visible and readable */
         .leaflet-control-attribution {
@@ -45,16 +48,105 @@
             border-right: 1px solid #d1d5db; /* gray-300 */
             display: flex;
             flex-direction: column; /* Stack elements vertically */
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        .close-sidebar-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0.5rem;
+        }
+        .close-sidebar-btn:hover {
+            color: #1f2937;
         }
         .sidebar-content {
              padding: 1rem; /* p-4 */
              flex-grow: 1; /* Allow list to take available space */
              overflow-y: auto; /* Scroll list if needed */
         }
-        /* Removed sidebar-footer as file input is gone */
-        /* .sidebar-footer { ... } */
         .map-container {
             flex-grow: 1;
+            position: relative;
+        }
+        .menu-toggle-btn {
+            display: none;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 1.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .menu-toggle-btn:hover {
+            background: #f3f4f6;
+        }
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                max-width: 100%;
+                position: absolute;
+                height: auto;
+                max-height: 60vh;
+                top: 0;
+                left: 0;
+                z-index: 999;
+                border-right: none;
+                border-bottom: 1px solid #d1d5db;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateY(0);
+            }
+            .sidebar-content {
+                max-height: 50vh;
+            }
+            .close-sidebar-btn {
+                display: block;
+            }
+            .menu-toggle-btn {
+                display: block;
+            }
+            #map {
+                height: calc(100vh - 2rem);
+            }
+        }
+        @media (max-width: 480px) {
+            .sidebar-title {
+                font-size: 1rem;
+            }
+            .sidebar-content {
+                max-height: 45vh;
+            }
+            .sidebar-header {
+                padding: 1rem 0.75rem;
+            }
         }
          /* Tailwind utility classes */
         .rounded-lg { border-radius: 0.5rem; }
@@ -87,17 +179,21 @@
 <body class="bg-gray-100">
 
 <div class="main-container">
-    <div class="sidebar bg-white shadow-md">
+    <div class="sidebar bg-white" id="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">🗺️ Balnearios</h2>
+            <button class="close-sidebar-btn" id="closeSidebarBtn">✕</button>
+        </div>
         <div class="sidebar-content">
-            <h2 class="text-lg font-semibold mb-4">Balnearios de Mina Clavero</h2>
-            <ul id="destination-list">
-                </ul>
+            <ul id="destination-list"></ul>
             <div id="error-message" class="mt-4 text-red-600 text-sm"></div>
             <div id="status-message" class="mt-4 text-gray-500 text-sm"></div>
         </div>
-         </div>
+    </div>
 
-    <div id="map" class="map-container"></div>
+    <div id="map" class="map-container">
+        <button class="menu-toggle-btn" id="menuToggleBtn">☰</button>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -110,7 +206,36 @@
     const listElement = document.getElementById('destination-list');
     const errorDiv = document.getElementById('error-message');
     const statusDiv = document.getElementById('status-message');
-    // const fileInput = document.getElementById('csvFileInput'); // REMOVED file input variable
+    const sidebar = document.getElementById('sidebar');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+    // Mobile menu toggle functionality
+    menuToggleBtn.addEventListener('click', () => {
+        sidebar.classList.add('open');
+    });
+
+    closeSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+    });
+
+    // Close sidebar when clicking on a destination
+    listElement.addEventListener('click', (e) => {
+        if (e.target.classList.contains('destination-item')) {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== menuToggleBtn) {
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
 
     // Function to clear existing map data (markers and list)
     function clearMapData() {
