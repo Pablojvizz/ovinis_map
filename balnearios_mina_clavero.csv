@@ -1,21 +1,21 @@
-Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia
-Mina Clavero,Centro de Mina Clavero,-31.72397637,-65.00402092,Referencia central
-Mina Clavero,Playas del Centro,-31.72525612,-65.00388191,Entre puente central y puente Olmos
-Mina Clavero,Balneario Municipal,-31.72273685,-65.00502588,Corazon de la ciudad
-Mina Clavero,La Residencia,-31.72504786,-64.9960485,900m del puente central
-Mina Clavero,Nido del Aguila,-31.72525693,-64.99248032,15 cuadras del centro - calle Urquiza
-Mina Clavero,Las Calaveras,-31.72079908,-64.98645008,Cerca de Nido del Aguila
-Mina Clavero,La Toma,-31.71277434,-64.96865801,Camino de los Artesanos
-Mina Clavero,Los Elefantes,-31.72243598,-65.01207255,Rio Los Sauces - Av Costanera
-Mina Clavero,Los Cajones,-31.71938138,-65.00886951,Rio Los Sauces
-Panaholma,Balneareo Panaholma,-31.63442945,-65.05401256,Aguas tibias
-San Lorenzo,Cascada Toro Muerto,-31.64449696,-64.99034611,Camino de los Artesanos
-San Lorenzo,Quebrada del Toro Muerto,-31.64790179,-64.97906834,Olmos Sur 1303
-Mina Clavero,La toma vieja,-31.72213848,-64.98797549,Antes de las calaveras
-Mina Clavero,Toboganes Naturales,-31.71329103194511,-64.96869327132524,En La Toma
-Cura Brochero,Los cedros,-31.71278999,-65.00713723,Balneareo los cedros
-Cura Brochero,Balneario Municipal,-31.70021314,-65.01732133,Balneario Municipal de Villa Cura Brochero
-Mina Clavero,El Baño de los Dioses,-31.74540552,-64.93341226,R34 camino altas cumbres
-Mina Clavero,Balneareo Abuela Teresa,-31.65770467,-64.94799413,R14 Av. Libertad
-Mina Clavero,Nacimiento del Rio Mina Clavero,-31.70896824,-64.89796299,R34 camino altas cumbres
-Mina Clavero,Playa Los Tiroleses,-31.73435167838108,-65.01192624429484,una costanera muy linda para salir a correr. andar en bici o caminar
+Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia,tipo
+Mina Clavero,Centro de Mina Clavero,-31.72397637,-65.00402092,Referencia central,balneario
+Mina Clavero,Playas del Centro,-31.72525612,-65.00388191,Entre puente central y puente Olmos,balneario
+Mina Clavero,Balneario Municipal,-31.72273685,-65.00502588,Corazon de la ciudad,balneario
+Mina Clavero,La Residencia,-31.72504786,-64.9960485,900m del puente central,balneario
+Mina Clavero,Nido del Aguila,-31.72525693,-64.99248032,15 cuadras del centro - calle Urquiza,balneario
+Mina Clavero,Las Calaveras,-31.72079908,-64.98645008,Cerca de Nido del Aguila,balneario
+Mina Clavero,La Toma,-31.71277434,-64.96865801,Camino de los Artesanos,balneario
+Mina Clavero,Los Elefantes,-31.72243598,-65.01207255,Rio Los Sauces - Av Costanera,balneario
+Mina Clavero,Los Cajones,-31.71938138,-65.00886951,Rio Los Sauces,balneario
+Panaholma,Balneareo Panaholma,-31.63442945,-65.05401256,Aguas tibias,balneario
+San Lorenzo,Cascada Toro Muerto,-31.64449696,-64.99034611,Camino de los Artesanos,balneario
+San Lorenzo,Quebrada del Toro Muerto,-31.64790179,-64.97906834,Olmos Sur 1303,balneario
+Mina Clavero,La toma vieja,-31.72213848,-64.98797549,Antes de las calaveras,balneario
+Mina Clavero,Toboganes Naturales,-31.71329103194511,-64.96869327132524,En La Toma,balneario
+Cura Brochero,Los cedros,-31.71278999,-65.00713723,Balneareo los cedros,balneario
+Cura Brochero,Balneario Municipal,-31.70021314,-65.01732133,Balneario Municipal de Villa Cura Brochero,balneario
+Mina Clavero,El Baño de los Dioses,-31.74540552,-64.93341226,R34 camino altas cumbres,balneario
+Mina Clavero,Balneareo Abuela Teresa,-31.65770467,-64.94799413,R14 Av. Libertad,balneario
+Mina Clavero,Nacimiento del Rio Mina Clavero,-31.70896824,-64.89796299,R34 camino altas cumbres,balneario
+Mina Clavero,Playa Los Tiroleses,-31.73435167838108,-65.01192624429484,una costanera muy linda para salir a correr. andar en bici o caminar,balneario
