@@ -81,6 +81,43 @@
              flex-grow: 1; /* Allow list to take available space */
              overflow-y: auto; /* Scroll list if needed */
         }
+        /* Estilizar barra de desplazamiento para navegadores webkit */
+        .sidebar-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Para Firefox */
+        .sidebar-content {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        /* Indicador visual de scroll en móviles */
+        @media (max-width: 768px) {
+            .sidebar-content {
+                background: linear-gradient(to bottom, #ffffff, #ffffff) content-box padding-box,
+                            linear-gradient(to bottom, rgba(0,0,0,0.1), transparent) padding-box;
+                background-clip: padding-box, padding-box;
+                padding-bottom: 1.5rem;
+            }
+            .sidebar-content::after {
+                content: '';
+                display: block;
+                height: 0.25rem;
+                background: linear-gradient(to right, #3b82f6, #8b5cf6, #3b82f6);
+                border-radius: 2px;
+                margin-top: 0.5rem;
+                opacity: 0.6;
+            }
+        }
         .map-container {
             flex-grow: 1;
             position: relative;
@@ -237,6 +274,35 @@
             }
         }
     });
+
+    // Indicador visual de scroll en la barra lateral
+    const sidebarContent = document.querySelector('.sidebar-content');
+    if (sidebarContent) {
+        sidebarContent.addEventListener('scroll', () => {
+            const scrollTop = sidebarContent.scrollTop;
+            const scrollHeight = sidebarContent.scrollHeight;
+            const clientHeight = sidebarContent.clientHeight;
+            
+            // Si hay scroll disponible, mostrar indicador
+            if (scrollHeight > clientHeight) {
+                if (scrollTop > 0) {
+                    sidebarContent.style.borderTop = '3px solid #3b82f6';
+                } else {
+                    sidebarContent.style.borderTop = 'none';
+                }
+                
+                // Indicador en la parte inferior si no está al final
+                if (scrollTop + clientHeight < scrollHeight - 10) {
+                    sidebarContent.style.borderBottom = '3px solid #3b82f6';
+                } else {
+                    sidebarContent.style.borderBottom = 'none';
+                }
+            }
+        });
+        
+        // Activar indicador inicial si es necesario
+        sidebarContent.dispatchEvent(new Event('scroll'));
+    }
 
     // Function to clear existing map data (markers and list)
     function clearMapData() {
