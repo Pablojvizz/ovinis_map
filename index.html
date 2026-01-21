@@ -22,6 +22,34 @@
             border-left-color: #3b82f6; /* blue-500 */
             transform: translateX(4px);
         }
+        /* Categoría items styles */
+        .category-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .category-icon {
+            font-size: 1.25rem;
+        }
+        .category-balneario .category-icon { color: #0ea5e9; }
+        .category-restobar .category-icon { color: #f59e0b; }
+        .category-servicio .category-icon { color: #10b981; }
+        .destination-item.balneario {
+            border-left-color: #0ea5e9;
+        }
+        .destination-item.restobar {
+            border-left-color: #f59e0b;
+        }
+        .destination-item.servicio {
+            border-left-color: #10b981;
+        }
         /* Ensure Leaflet attribution is visible and readable */
         .leaflet-control-attribution {
             font-size: 10px;
@@ -326,15 +354,21 @@
         for (let i = 0; i < lines.length; i++) {
             if (i === 0 && lines[i].toLowerCase().includes('provincia')) continue;
             const parts = lines[i].split(',');
-            if (parts.length === 5) {
+            if (parts.length >= 6) {
                 const province = parts[0].trim();
                 const city = parts[1].trim();
                 const lat = parseFloat(parts[2]);
                 const lon = parseFloat(parts[3]);
                 const link = parts[4].trim();
+                const tipo = parts[5].trim().toLowerCase();
 
-                if (!isNaN(lat) && !isNaN(lon) && city && province) {
-                    locations.push({ name: `${city}, ${province}`, coords: [lat, lon], link: link });
+                if (!isNaN(lat) && !isNaN(lon) && city && province && tipo) {
+                    locations.push({ 
+                        name: `${city}, ${province}`, 
+                        coords: [lat, lon], 
+                        link: link,
+                        tipo: tipo 
+                    });
                 } else {
                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
                 }
@@ -351,24 +385,65 @@
              return;
         }
 
-        // --- Populate List and Add Markers ---
+        // --- Populate List and Add Markers by Category ---
         if (!listElement) {
             throw new Error("Sidebar list element ('destination-list') not found.");
         }
 
-        locations.forEach(loc => {
-            // Create list item
-            const listItem = document.createElement('li');
-            listItem.textContent = loc.name;
-            listItem.className = 'p-2 mb-2 rounded-md destination-item text-sm text-gray-700 hover:bg-gray-200';
-            listItem.onclick = () => { map.flyTo(loc.coords, 18); };
-            listElement.appendChild(listItem);
+        // Agrupar por tipo
+        const categorized = {
+            balneario: [],
+            restobar: [],
+            servicio: []
+        };
 
-            // Create map marker
-            const marker = L.marker(loc.coords, { pane: 'markerPane' });
-            const popupContent = `<b>${loc.name}</b><br><b>${loc.link}</b><br><a href="https://www.google.com/maps/dir/La+Br%C3%BAjula+Hostel+y+Club+Social/${loc.coords}/@-31.7272354,-65.0056258,1241m/data=!3m1!1e3!4m9!4m8!1m5!1m1!1s0x942d27ab14f282c9:0xc7e876d27bc68a47!2m2!1d-65.0127905!2d-31.7248017!1m0!3e0?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Como llegar</a>`;
-            marker.bindPopup(popupContent);
-            markersLayer.addLayer(marker); // Add marker to the feature group
+        locations.forEach(loc => {
+            if (categorized[loc.tipo]) {
+                categorized[loc.tipo].push(loc);
+            }
+        });
+
+        // Crear títulos y items por categoría
+        const categoryInfo = [
+            { key: 'balneario', title: '🏖️ Balnearios', icon: '🏖️' },
+            { key: 'restobar', title: '🍽️ Bares-Restaurantes', icon: '🍽️' },
+            { key: 'servicio', title: '🏢 Servicios', icon: '🏢' }
+        ];
+
+        categoryInfo.forEach(cat => {
+            if (categorized[cat.key].length > 0) {
+                // Agregar título de categoría
+                const categoryHeader = document.createElement('li');
+                categoryHeader.className = `category-title category-${cat.key}`;
+                categoryHeader.innerHTML = `<span class="category-icon">${cat.icon}</span> ${cat.title} (${categorized[cat.key].length})`;
+                categoryHeader.style.listStyle = 'none';
+                listElement.appendChild(categoryHeader);
+
+                // Agregar items de la categoría
+                categorized[cat.key].forEach(loc => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = loc.name;
+                    listItem.className = `p-2 mb-2 rounded-md destination-item ${loc.tipo} text-sm text-gray-700`;
+                    listItem.style.listStyle = 'none';
+                    listItem.onclick = () => { map.flyTo(loc.coords, 18); };
+                    listElement.appendChild(listItem);
+
+                    // Create map marker with color based on type
+                    const markerColor = {
+                        'balneario': '#0ea5e9',
+                        'restobar': '#f59e0b',
+                        'servicio': '#10b981'
+                    }[loc.tipo] || '#3b82f6';
+
+                    const marker = L.marker(loc.coords, { 
+                        pane: 'markerPane',
+                        title: loc.name
+                    });
+                    const popupContent = `<b>${loc.name}</b><br><strong>Tipo:</strong> ${loc.tipo}<br><b>${loc.link}</b><br><a href="https://www.google.com/maps/dir/La+Br%C3%BAjula+Hostel+y+Club+Social/${loc.coords}/@-31.7272354,-65.0056258,1241m/data=!3m1!1e3!4m9!4m8!1m5!1m1!1s0x942d27ab14f282c9:0xc7e876d27bc68a47!2m2!1d-65.0127905!2d-31.7248017!1m0!3e0?entry=ttu&g_ep=EgoyMDI2MDExMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Como llegar</a>`;
+                    marker.bindPopup(popupContent);
+                    markersLayer.addLayer(marker);
+                });
+            }
         });
 
         // Adjust map bounds to fit all markers
