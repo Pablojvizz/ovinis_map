@@ -78,25 +78,27 @@
         }
         .sidebar-content {
              padding: 1rem; /* p-4 */
+             padding-right: 0.5rem;
              flex-grow: 1; /* Allow list to take available space */
-             overflow-y: scroll; /* Scroll list if needed */
+             overflow-y: auto; /* Scroll list if needed */
              position: relative;
         }
         /* Estilizar barra de desplazamiento para navegadores webkit */
         .sidebar-content::-webkit-scrollbar {
-            width: 16px;
+            width: 20px !important;
         }
         .sidebar-content::-webkit-scrollbar-track {
             background: #f1f5f9;
             border-radius: 4px;
         }
         .sidebar-content::-webkit-scrollbar-thumb {
-            background: #3b82f6;
+            background: #3b82f6 !important;
             border-radius: 8px;
-            border: 2px solid #f1f5f9;
+            border: 3px solid #f1f5f9;
+            min-height: 40px;
         }
         .sidebar-content::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
+            background: #2563eb !important;
         }
         /* Para Firefox */
         .sidebar-content {
