@@ -565,6 +565,7 @@
     // --- Cargar eventos desde la API ---
     async function cargarEventos() {
         try {
+            console.log('Iniciando cargarEventos()...');
             const response = await fetch('./api/eventos.php');
             if (!response.ok) {
                 console.warn('No se pudieron cargar los eventos:', response.status);
@@ -572,19 +573,27 @@
             }
             const data = await response.json();
             const eventos = data.eventos || [];
+            console.log('Eventos cargados:', eventos);
 
             // Filtrar eventos cuya fecha no haya pasado
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
+            console.log('Fecha hoy:', hoy);
 
             const eventosValidos = eventos.filter(evento => {
                 const fechaEvento = new Date(evento.fecha);
                 fechaEvento.setHours(0, 0, 0, 0);
-                return fechaEvento >= hoy;
+                const esValido = fechaEvento >= hoy;
+                console.log(`Evento "${evento.nombre}" - Fecha: ${evento.fecha} - Válido: ${esValido}`);
+                return esValido;
             });
 
+            console.log('Eventos válidos:', eventosValidos);
             if (eventosValidos.length > 0) {
+                console.log('Mostrando popup con', eventosValidos.length, 'eventos');
                 mostrarPopupEventos(eventosValidos);
+            } else {
+                console.log('No hay eventos válidos para mostrar');
             }
         } catch (error) {
             console.error('Error al cargar eventos:', error);
@@ -593,7 +602,17 @@
 
     // --- Mostrar popup con eventos del día ---
     function mostrarPopupEventos(eventos) {
-        if (!eventos || eventos.length === 0) return;
+        if (!eventos || eventos.length === 0) {
+            console.log('No hay eventos para mostrar');
+            return;
+        }
+        
+        if (!map) {
+            console.error('El mapa no está inicializado');
+            return;
+        }
+
+        console.log('Iniciando mostrarPopupEventos con', eventos.length, 'eventos');
 
         // Crear contenido del popup
         let contenido = '<div style="max-width: 300px; text-align: center;">';
@@ -601,6 +620,7 @@
         contenido += '<div style="text-align: left; font-size: 12px;">';
 
         eventos.forEach((evento, index) => {
+            console.log(`Agregando evento al popup: ${evento.nombre}`);
             contenido += `<div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">`;
             contenido += `<p style="margin: 5px 0;"><strong>${evento.nombre}</strong> (${evento.hora})</p>`;
             // Convertir saltos de línea \n a <br> para mostrar correctamente
@@ -614,6 +634,8 @@
 
         contenido += '</div></div>';
 
+        console.log('Contenido del popup creado, abriendo popup en mapa');
+        
         // Mostrar popup en el centro del mapa
         const popup = L.popup({
             maxWidth: 350,
@@ -622,6 +644,8 @@
         .setLatLng(map.getCenter())
         .setContent(contenido)
         .openOn(map);
+        
+        console.log('Popup abierto exitosamente');
     }
 
     // --- Initialization ---
