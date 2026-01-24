@@ -603,7 +603,9 @@
         eventos.forEach((evento, index) => {
             contenido += `<div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">`;
             contenido += `<p style="margin: 5px 0;"><strong>${evento.nombre}</strong> (${evento.hora})</p>`;
-            contenido += `<p style="margin: 5px 0; font-size: 11px;">${evento.descripcion}</p>`;
+            // Convertir saltos de línea \n a <br> para mostrar correctamente
+            const descripcionFormateada = evento.descripcion.replace(/\n/g, '<br>');
+            contenido += `<p style="margin: 5px 0; font-size: 11px;">${descripcionFormateada}</p>`;
             if (evento.enlace) {
                 contenido += `<p style="margin: 5px 0;"><a href="${evento.enlace}" target="_blank" rel="noopener noreferrer" style="color: #0ea5e9; text-decoration: underline;">Ver más</a></p>`;
             }
@@ -614,7 +616,7 @@
 
         // Mostrar popup en el centro del mapa
         const popup = L.popup({
-            maxWidth: 320,
+            maxWidth: 350,
             className: 'custom-event-popup'
         })
         .setLatLng(map.getCenter())

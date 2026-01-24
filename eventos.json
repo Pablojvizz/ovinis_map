@@ -1,3 +1,13 @@
 {
-  "eventos": []
+    "eventos": [
+        {
+            "fecha": "2026-01-24",
+            "hora": "21:00",
+            "nombre": "Marcelo Torres",
+            "descripcion": "Ex bajista de Spinetta y el indio Solari\nEntrada: $12.000\nAnticipadas: 3544 549788",
+            "latitud": -31.7274,
+            "longitud": -65.0043,
+            "enlace": ""
+        }
+    ]
 }
