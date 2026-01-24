@@ -565,7 +565,7 @@
     // --- Cargar eventos desde la API ---
     async function cargarEventos() {
         try {
-            const response = await fetch('/api/eventos');
+            const response = await fetch('./api/eventos.php');
             if (!response.ok) {
                 console.warn('No se pudieron cargar los eventos:', response.status);
                 return;

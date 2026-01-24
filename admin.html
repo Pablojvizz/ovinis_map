@@ -381,7 +381,7 @@
         // Cargar eventos desde la API
         async function cargarEventos() {
             try {
-                const response = await fetch('/api/eventos');
+                const response = await fetch('./api/eventos.php');
                 if (!response.ok) {
                     throw new Error('No se pudieron cargar los eventos');
                 }
@@ -432,7 +432,7 @@
             };
             
             try {
-                const response = await fetch('/api/eventos', {
+                const response = await fetch('./api/eventos.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -462,7 +462,7 @@
             }
             
             try {
-                const response = await fetch('/api/eventos', {
+                const response = await fetch('./api/eventos.php', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
