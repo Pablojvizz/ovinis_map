@@ -562,6 +562,66 @@
         }
     }
 
+    // --- Cargar eventos desde la API ---
+    async function cargarEventos() {
+        try {
+            const response = await fetch('/api/eventos');
+            if (!response.ok) {
+                console.warn('No se pudieron cargar los eventos:', response.status);
+                return;
+            }
+            const data = await response.json();
+            const eventos = data.eventos || [];
+
+            // Filtrar eventos cuya fecha no haya pasado
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const eventosValidos = eventos.filter(evento => {
+                const fechaEvento = new Date(evento.fecha);
+                fechaEvento.setHours(0, 0, 0, 0);
+                return fechaEvento >= hoy;
+            });
+
+            if (eventosValidos.length > 0) {
+                mostrarPopupEventos(eventosValidos);
+            }
+        } catch (error) {
+            console.error('Error al cargar eventos:', error);
+        }
+    }
+
+    // --- Mostrar popup con eventos del día ---
+    function mostrarPopupEventos(eventos) {
+        if (!eventos || eventos.length === 0) return;
+
+        // Crear contenido del popup
+        let contenido = '<div style="max-width: 300px; text-align: center;">';
+        contenido += '<h3 style="margin: 10px 0; font-size: 18px; font-weight: bold;">📅 Eventos de Hoy</h3>';
+        contenido += '<div style="text-align: left; font-size: 12px;">';
+
+        eventos.forEach((evento, index) => {
+            contenido += `<div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">`;
+            contenido += `<p style="margin: 5px 0;"><strong>${evento.nombre}</strong> (${evento.hora})</p>`;
+            contenido += `<p style="margin: 5px 0; font-size: 11px;">${evento.descripcion}</p>`;
+            if (evento.enlace) {
+                contenido += `<p style="margin: 5px 0;"><a href="${evento.enlace}" target="_blank" rel="noopener noreferrer" style="color: #0ea5e9; text-decoration: underline;">Ver más</a></p>`;
+            }
+            contenido += `</div>`;
+        });
+
+        contenido += '</div></div>';
+
+        // Mostrar popup en el centro del mapa
+        const popup = L.popup({
+            maxWidth: 320,
+            className: 'custom-event-popup'
+        })
+        .setLatLng(map.getCenter())
+        .setContent(contenido)
+        .openOn(map);
+    }
+
     // --- Initialization ---
     try {
         if (typeof L === 'undefined') {
@@ -627,6 +687,8 @@
                 clearMapData(); // Clear any previous data (though unlikely needed on initial load)
                 loadAndDisplayData(csvText); // Process the new data
                 console.log("CSV data loaded and processed successfully via fetch.");
+                // Cargar eventos después de cargar los datos de ubicaciones
+                cargarEventos();
             })
             .catch(fetchError => {
                 // Handle errors during fetch (network error, file not found, etc.)

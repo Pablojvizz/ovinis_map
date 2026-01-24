@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Eventos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .login-section {
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-section.hidden {
+            display: none;
+        }
+        
+        .admin-section {
+            padding: 40px;
+            display: none;
+        }
+        
+        .admin-section.visible {
+            display: block;
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .login-section label {
+            color: white;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        .login-section input {
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .login-section input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .login-section input:focus {
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-login {
+            background: white;
+            color: #667eea;
+            margin-top: 10px;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-logout {
+            background: #e74c3c;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+        
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 12px;
+            width: auto;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #060;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success.show {
+            display: block;
+        }
+        
+        .events-list {
+            margin-top: 30px;
+        }
+        
+        .event-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .event-item h3 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .event-item p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .event-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .event-date {
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sección de Login -->
+        <div class="login-section" id="loginSection">
+            <h1>🔐 Panel de Administración</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" placeholder="Usuario" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" placeholder="Contraseña" required>
+                </div>
+                <button type="submit" class="btn-login">Ingresar</button>
+            </form>
+        </div>
+        
+        <!-- Sección de Admin -->
+        <div class="admin-section" id="adminSection">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button class="btn-logout" id="logoutBtn">Cerrar Sesión</button>
+            </div>
+            
+            <h2>📅 Agregar Nuevo Evento</h2>
+            
+            <div class="error" id="errorMsg"></div>
+            <div class="success" id="successMsg"></div>
+            
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventFecha">Fecha:</label>
+                    <input type="date" id="eventFecha" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventHora">Hora:</label>
+                    <input type="time" id="eventHora" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventNombre">Nombre del Evento:</label>
+                    <input type="text" id="eventNombre" placeholder="Ej: Festival de Verano" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventDescripcion">Descripción:</label>
+                    <textarea id="eventDescripcion" placeholder="Descripción del evento" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventLatitud">Latitud:</label>
+                    <input type="number" id="eventLatitud" step="0.0001" placeholder="-31.7272" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventLongitud">Longitud:</label>
+                    <input type="number" id="eventLongitud" step="0.0001" placeholder="-65.0056" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="eventEnlace">Enlace (opcional):</label>
+                    <input type="url" id="eventEnlace" placeholder="https://ejemplo.com">
+                </div>
+                
+                <button type="submit" class="btn-submit">Agregar Evento</button>
+            </form>
+            
+            <div class="events-list">
+                <h2>📋 Eventos Registrados</h2>
+                <div id="eventosList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const ADMIN_TOKEN = "labrujula2026";
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "labrujula2026";
+        
+        // Referencias a elementos del DOM
+        const loginSection = document.getElementById('loginSection');
+        const adminSection = document.getElementById('adminSection');
+        const loginForm = document.getElementById('loginForm');
+        const eventForm = document.getElementById('eventForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const eventosList = document.getElementById('eventosList');
+        
+        // Mostrar mensaje de error
+        function mostrarError(mensaje) {
+            errorMsg.textContent = mensaje;
+            errorMsg.classList.add('show');
+            successMsg.classList.remove('show');
+            setTimeout(() => errorMsg.classList.remove('show'), 5000);
+        }
+        
+        // Mostrar mensaje de éxito
+        function mostrarExito(mensaje) {
+            successMsg.textContent = mensaje;
+            successMsg.classList.add('show');
+            errorMsg.classList.remove('show');
+            setTimeout(() => successMsg.classList.remove('show'), 5000);
+        }
+        
+        // Verificar autenticación al cargar la página
+        function verificarAutenticacion() {
+            const token = sessionStorage.getItem('adminToken');
+            if (token === ADMIN_TOKEN) {
+                loginSection.classList.add('hidden');
+                adminSection.classList.add('visible');
+                cargarEventos();
+            }
+        }
+        
+        // Manejar login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usuario = document.getElementById('username').value;
+            const contrasena = document.getElementById('password').value;
+            
+            if (usuario === ADMIN_USER && contrasena === ADMIN_PASS) {
+                sessionStorage.setItem('adminToken', ADMIN_TOKEN);
+                loginSection.classList.add('hidden');
+                adminSection.classList.add('visible');
+                cargarEventos();
+                loginForm.reset();
+            } else {
+                mostrarError('Usuario o contraseña incorrectos');
+            }
+        });
+        
+        // Manejar logout
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('adminToken');
+            loginSection.classList.remove('hidden');
+            adminSection.classList.remove('visible');
+            eventForm.reset();
+            loginForm.reset();
+        });
+        
+        // Cargar eventos desde la API
+        async function cargarEventos() {
+            try {
+                const response = await fetch('/api/eventos');
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los eventos');
+                }
+                
+                const data = await response.json();
+                const eventos = data.eventos || [];
+                
+                if (eventos.length === 0) {
+                    eventosList.innerHTML = '<p style="color: #999; text-align: center;">No hay eventos registrados</p>';
+                    return;
+                }
+                
+                eventosList.innerHTML = '';
+                eventos.forEach((evento, index) => {
+                    const eventDiv = document.createElement('div');
+                    eventDiv.className = 'event-item';
+                    eventDiv.innerHTML = `
+                        <h3>${evento.nombre}</h3>
+                        <p><strong>Fecha:</strong> ${evento.fecha} a las ${evento.hora}</p>
+                        <p><strong>Descripción:</strong> ${evento.descripcion}</p>
+                        <p><strong>Ubicación:</strong> (${evento.latitud}, ${evento.longitud})</p>
+                        ${evento.enlace ? `<p><strong>Enlace:</strong> <a href="${evento.enlace}" target="_blank">${evento.enlace}</a></p>` : ''}
+                        <div class="event-meta">
+                            <span class="event-date">ID: ${index}</span>
+                            <button type="button" class="btn-delete" onclick="eliminarEvento(${index})">Eliminar</button>
+                        </div>
+                    `;
+                    eventosList.appendChild(eventDiv);
+                });
+            } catch (error) {
+                console.error('Error al cargar eventos:', error);
+                mostrarError('Error al cargar los eventos');
+            }
+        }
+        
+        // Agregar nuevo evento
+        eventForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const evento = {
+                fecha: document.getElementById('eventFecha').value,
+                hora: document.getElementById('eventHora').value,
+                nombre: document.getElementById('eventNombre').value,
+                descripcion: document.getElementById('eventDescripcion').value,
+                latitud: parseFloat(document.getElementById('eventLatitud').value),
+                longitud: parseFloat(document.getElementById('eventLongitud').value),
+                enlace: document.getElementById('eventEnlace').value || ''
+            };
+            
+            try {
+                const response = await fetch('/api/eventos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Token': ADMIN_TOKEN
+                    },
+                    body: JSON.stringify(evento)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al agregar el evento');
+                }
+                
+                mostrarExito('Evento agregado exitosamente');
+                eventForm.reset();
+                cargarEventos();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError(error.message || 'Error al agregar el evento');
+            }
+        });
+        
+        // Eliminar evento
+        async function eliminarEvento(index) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este evento?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/eventos', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Admin-Token': ADMIN_TOKEN
+                    },
+                    body: JSON.stringify({ index })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error al eliminar el evento');
+                }
+                
+                mostrarExito('Evento eliminado exitosamente');
+                cargarEventos();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarError(error.message || 'Error al eliminar el evento');
+            }
+        }
+        
+        // Verificar autenticación al cargar
+        verificarAutenticacion();
+    </script>
+</body>
+</html>
