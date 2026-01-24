@@ -575,15 +575,15 @@
             const eventos = data.eventos || [];
             console.log('Eventos cargados:', eventos);
 
-            // Filtrar eventos cuya fecha no haya pasado
+            // Obtener fecha de hoy en formato YYYY-MM-DD (sin considerar zona horaria)
             const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-            console.log('Fecha hoy:', hoy);
+            const fechaHoyString = hoy.getFullYear() + '-' + 
+                                   String(hoy.getMonth() + 1).padStart(2, '0') + '-' + 
+                                   String(hoy.getDate()).padStart(2, '0');
+            console.log('Fecha hoy (string):', fechaHoyString);
 
             const eventosValidos = eventos.filter(evento => {
-                const fechaEvento = new Date(evento.fecha);
-                fechaEvento.setHours(0, 0, 0, 0);
-                const esValido = fechaEvento >= hoy;
+                const esValido = evento.fecha >= fechaHoyString;
                 console.log(`Evento "${evento.nombre}" - Fecha: ${evento.fecha} - Válido: ${esValido}`);
                 return esValido;
             });
