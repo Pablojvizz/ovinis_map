@@ -1,9 +1,15 @@
 // Configuración de GitHub
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.github_key;
-const GITHUB_OWNER = process.env.GITHUB_OWNER || process.env.VERCEL_GIT_REPO_OWNER;
-const GITHUB_REPO = process.env.GITHUB_REPO || process.env.VERCEL_GIT_REPO_SLUG?.split('/')[1];
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GITHUB_OWNER = process.env.GITHUB_OWNER;
+const GITHUB_REPO = process.env.GITHUB_REPO;
 const CSV_FILE_PATH = 'balnearios_mina_clavero.csv';
 const GITHUB_API_BASE = 'https://api.github.com';
+
+// Log para debugging (sin mostrar el token completo)
+console.log('Verificando variables de entorno:');
+console.log('GITHUB_TOKEN:', GITHUB_TOKEN ? `${GITHUB_TOKEN.substring(0, 10)}...` : 'NO DEFINIDO');
+console.log('GITHUB_OWNER:', GITHUB_OWNER || 'NO DEFINIDO');
+console.log('GITHUB_REPO:', GITHUB_REPO || 'NO DEFINIDO');
 
 // Función para hacer peticiones a GitHub API
 async function githubRequest(endpoint, method = 'GET', body = null) {
@@ -261,14 +267,13 @@ async function guardarEvento(evento) {
         
         // Agregar nuevo evento - asegurar que la descripción se maneje correctamente
         // La descripción puede venir con saltos de línea reales del textarea HTML
-        //const descripcion = String(evento.descripcion || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         
         const nuevoEvento = {
             'Provincia': 'Mina Clavero',
             'Ciudad/Localidad': String(evento.nombre || ''),
             'Latitud': String(evento.latitud || ''),
             'Longitud': String(evento.longitud || ''),
-            'Enlace a la Noticia': String(evento.descripcion || ''), // Esto puede tener \n reales que se escaparán
+            'Enlace a la Noticia': String(evento.descripcion || ''),
             'tipo': 'evento',
             'fecha': String(evento.fecha || ''),
             'hora': String(evento.hora || '')
@@ -309,13 +314,21 @@ export default async function handler(req, res) {
 
     // Verificar configuración de GitHub
     if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
-        console.error('Configuración de GitHub faltante:', {
+        const errorDetails = {
             hasToken: !!GITHUB_TOKEN,
-            owner: GITHUB_OWNER,
-            repo: GITHUB_REPO
-        });
+            owner: GITHUB_OWNER || 'NO DEFINIDO',
+            repo: GITHUB_REPO || 'NO DEFINIDO'
+        };
+        console.error('Configuración de GitHub faltante:', errorDetails);
+        
+        const missingVars = [];
+        if (!GITHUB_TOKEN) missingVars.push('GITHUB_TOKEN');
+        if (!GITHUB_OWNER) missingVars.push('GITHUB_OWNER');
+        if (!GITHUB_REPO) missingVars.push('GITHUB_REPO');
+        
         return res.status(500).json({ 
-            error: 'Configuración de GitHub incompleta. Verifica las variables de entorno GITHUB_TOKEN, GITHUB_OWNER y GITHUB_REPO' 
+            error: `Faltan variables de entorno: ${missingVars.join(', ')}. Configúralas en Vercel Settings > Environment Variables`,
+            details: errorDetails
         });
     }
 
