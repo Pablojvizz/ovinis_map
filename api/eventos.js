@@ -268,7 +268,7 @@ async function guardarEvento(evento) {
             'Ciudad/Localidad': String(evento.nombre || ''),
             'Latitud': String(evento.latitud || ''),
             'Longitud': String(evento.longitud || ''),
-            'Enlace a la Noticia': '"' + descripcion + '"', // Esto puede tener \n reales que se escaparán
+            'Enlace a la Noticia': String(evento.descripcion || ''), // Esto puede tener \n reales que se escaparán
             'tipo': 'evento',
             'fecha': String(evento.fecha || ''),
             'hora': String(evento.hora || '')

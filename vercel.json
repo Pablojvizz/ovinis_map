@@ -1,9 +1,4 @@
 {
   "buildCommand": "echo 'Build complete'",
-  "outputDirectory": ".",
-  "functions": {
-    "api/eventos.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "outputDirectory": "."
 }
