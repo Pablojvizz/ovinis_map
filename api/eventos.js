@@ -1,30 +1,290 @@
-const fs = require('fs');
-const path = require('path');
+// Configuración de GitHub
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || process.env.github_key;
+const GITHUB_OWNER = process.env.GITHUB_OWNER || process.env.VERCEL_GIT_REPO_OWNER;
+const GITHUB_REPO = process.env.GITHUB_REPO || process.env.VERCEL_GIT_REPO_SLUG?.split('/')[1];
+const CSV_FILE_PATH = 'balnearios_mina_clavero.csv';
+const GITHUB_API_BASE = 'https://api.github.com';
 
-// Ruta del archivo de eventos
-const eventosFile = path.join(process.cwd(), 'eventos.json');
+// Función para hacer peticiones a GitHub API
+async function githubRequest(endpoint, method = 'GET', body = null) {
+    const url = `${GITHUB_API_BASE}${endpoint}`;
+    const headers = {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'Eventos-API'
+    };
+    
+    if (body) {
+        headers['Content-Type'] = 'application/json';
+    }
+    
+    const options = {
+        method,
+        headers
+    };
+    
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+    
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: response.statusText }));
+        throw new Error(error.message || `GitHub API error: ${response.status}`);
+    }
+    
+    if (response.status === 204) {
+        return null;
+    }
+    
+    return await response.json();
+}
 
-// Función para leer eventos
-function leerEventos() {
+// Función para obtener el contenido del CSV desde GitHub
+async function obtenerCSVDesdeGitHub() {
     try {
-        if (fs.existsSync(eventosFile)) {
-            const data = fs.readFileSync(eventosFile, 'utf8');
-            return JSON.parse(data);
+        const endpoint = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CSV_FILE_PATH}`;
+        const file = await githubRequest(endpoint);
+        
+        // Decodificar contenido base64
+        const content = Buffer.from(file.content, 'base64').toString('utf8');
+        return { content, sha: file.sha };
+    } catch (error) {
+        if (error.message.includes('404')) {
+            // Archivo no existe, retornar contenido vacío
+            return { content: 'Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia,tipo,fecha,hora\n', sha: null };
         }
-        return { eventos: [] };
+        throw error;
+    }
+}
+
+// Función para actualizar el CSV en GitHub
+async function actualizarCSVEnGitHub(contenido, sha, mensaje = 'Actualizar eventos') {
+    const endpoint = `/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CSV_FILE_PATH}`;
+    
+    // Codificar contenido a base64
+    const content = Buffer.from(contenido, 'utf8').toString('base64');
+    
+    const body = {
+        message: mensaje,
+        content: content,
+        sha: sha
+    };
+    
+    return await githubRequest(endpoint, 'PUT', body);
+}
+
+// Función para parsear CSV (maneja campos entre comillas y saltos de línea)
+function parseCSV(text) {
+    const lines = [];
+    let currentLine = '';
+    let inQuotes = false;
+    
+    // Procesar el texto carácter por carácter para manejar comillas correctamente
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Comilla escapada (""), agregar una comilla
+                currentLine += '"';
+                i++; // Saltar la siguiente comilla
+            } else {
+                // Toggle del estado de comillas
+                inQuotes = !inQuotes;
+            }
+        } else if (char === '\n' && !inQuotes) {
+            // Fin de línea (fuera de comillas)
+            if (currentLine.trim()) {
+                lines.push(currentLine);
+            }
+            currentLine = '';
+        } else {
+            currentLine += char;
+        }
+    }
+    
+    // Agregar la última línea si existe
+    if (currentLine.trim()) {
+        lines.push(currentLine);
+    }
+    
+    if (lines.length === 0) return [];
+    
+    // Parsear headers
+    const headers = parseCSVLine(lines[0]);
+    const rows = [];
+    
+    // Parsear cada línea de datos
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        const row = {};
+        headers.forEach((header, index) => {
+            row[header] = values[index] || '';
+        });
+        rows.push(row);
+    }
+    
+    return rows;
+}
+
+// Función para parsear una línea CSV individual
+function parseCSVLine(line) {
+    const values = [];
+    let currentValue = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+                // Comilla escapada
+                currentValue += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (char === ',' && !inQuotes) {
+            // Fin del campo
+            values.push(currentValue.trim());
+            currentValue = '';
+        } else {
+            currentValue += char;
+        }
+    }
+    
+    // Agregar el último valor
+    values.push(currentValue.trim());
+    
+    return values;
+}
+
+// Función para escapar un campo CSV (maneja comillas y saltos de línea)
+function escaparCampoCSV(campo) {
+    if (campo === null || campo === undefined) {
+        return '';
+    }
+    const str = String(campo);
+    // Si el campo contiene comillas, comas o saltos de línea, necesita estar entre comillas
+    // Verificar saltos de línea reales (\n) y también el string "\n"
+    const tieneSaltoLinea = str.includes('\n') || str.includes('\r') || str.includes('\r\n');
+    if (str.includes('"') || str.includes(',') || tieneSaltoLinea) {
+        // Escapar comillas dobles duplicándolas y envolver en comillas
+        return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+}
+
+// Función para convertir objeto a línea CSV
+function toCSVLine(obj) {
+    return [
+        escaparCampoCSV(obj['Provincia'] || 'Mina Clavero'),
+        escaparCampoCSV(obj['Ciudad/Localidad'] || ''),
+        escaparCampoCSV(obj['Latitud'] || ''),
+        escaparCampoCSV(obj['Longitud'] || ''),
+        escaparCampoCSV(obj['Enlace a la Noticia'] || ''),
+        escaparCampoCSV(obj['tipo'] || ''),
+        escaparCampoCSV(obj['fecha'] || ''),
+        escaparCampoCSV(obj['hora'] || '')
+    ].join(',');
+}
+
+// Función para leer eventos desde CSV
+async function leerEventos() {
+    try {
+        const { content } = await obtenerCSVDesdeGitHub();
+        const rows = parseCSV(content);
+        
+        // Filtrar solo eventos
+        const eventos = rows
+            .filter(row => row.tipo && row.tipo.toLowerCase() === 'evento')
+            .map(row => ({
+                fecha: row.fecha || '',
+                hora: row.hora || '',
+                nombre: row['Ciudad/Localidad'] || '',
+                descripcion: row['Enlace a la Noticia'] || '',
+                latitud: parseFloat(row.Latitud) || 0,
+                longitud: parseFloat(row.Longitud) || 0,
+                enlace: row['Enlace a la Noticia'] || ''
+            }));
+        
+        return { eventos };
     } catch (error) {
         console.error('Error leyendo eventos:', error);
         return { eventos: [] };
     }
 }
 
-// Función para guardar eventos
-function guardarEventos(datos) {
+// Función para reconstruir CSV correctamente desde datos parseados
+function reconstruirCSV(rows, headers) {
+    let csv = headers.map(h => escaparCampoCSV(h)).join(',') + '\n';
+    
+    rows.forEach(row => {
+        const line = headers.map(header => {
+            const value = row[header] || '';
+            return escaparCampoCSV(value);
+        }).join(',');
+        csv += line + '\n';
+    });
+    
+    return csv;
+}
+
+// Función para guardar evento en CSV
+async function guardarEvento(evento) {
     try {
-        fs.writeFileSync(eventosFile, JSON.stringify(datos, null, 2), 'utf8');
+        // Obtener CSV actual desde GitHub
+        const { content: csvContent, sha } = await obtenerCSVDesdeGitHub();
+        
+        // Parsear el CSV correctamente (esto maneja CSV rotos también)
+        const rows = parseCSV(csvContent);
+        const headers = rows.length > 0 ? Object.keys(rows[0]) : 
+            ['Provincia', 'Ciudad/Localidad', 'Latitud', 'Longitud', 'Enlace a la Noticia', 'tipo', 'fecha', 'hora'];
+        
+        // Asegurar que los headers incluyan fecha y hora
+        if (!headers.includes('fecha')) {
+            headers.push('fecha');
+        }
+        if (!headers.includes('hora')) {
+            headers.push('hora');
+        }
+        
+        // Agregar columnas faltantes a las filas existentes
+        rows.forEach(row => {
+            if (!row.hasOwnProperty('fecha')) row.fecha = '';
+            if (!row.hasOwnProperty('hora')) row.hora = '';
+        });
+        
+        // Agregar nuevo evento - asegurar que la descripción se maneje correctamente
+        // La descripción puede venir con saltos de línea reales del textarea HTML
+        //const descripcion = String(evento.descripcion || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        
+        const nuevoEvento = {
+            'Provincia': 'Mina Clavero',
+            'Ciudad/Localidad': String(evento.nombre || ''),
+            'Latitud': String(evento.latitud || ''),
+            'Longitud': String(evento.longitud || ''),
+            'Enlace a la Noticia': '"' + descripcion + '"', // Esto puede tener \n reales que se escaparán
+            'tipo': 'evento',
+            'fecha': String(evento.fecha || ''),
+            'hora': String(evento.hora || '')
+        };
+        
+        rows.push(nuevoEvento);
+        
+        // Reconstruir CSV correctamente con todos los campos escapados
+        // La función reconstruirCSV usará escaparCampoCSV que detectará los \n y los envolverá en comillas
+        const contenidoFinal = reconstruirCSV(rows, headers);
+        
+        // Actualizar en GitHub
+        await actualizarCSVEnGitHub(contenidoFinal, sha, `Agregar evento: ${evento.nombre}`);
         return true;
     } catch (error) {
-        console.error('Error guardando eventos:', error);
+        console.error('Error guardando evento:', error);
         return false;
     }
 }
@@ -35,7 +295,7 @@ function validarAuth(req) {
     return token === 'labrujula2026';
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
     // CORS
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,10 +307,27 @@ export default function handler(req, res) {
         return;
     }
 
+    // Verificar configuración de GitHub
+    if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
+        console.error('Configuración de GitHub faltante:', {
+            hasToken: !!GITHUB_TOKEN,
+            owner: GITHUB_OWNER,
+            repo: GITHUB_REPO
+        });
+        return res.status(500).json({ 
+            error: 'Configuración de GitHub incompleta. Verifica las variables de entorno GITHUB_TOKEN, GITHUB_OWNER y GITHUB_REPO' 
+        });
+    }
+
     // GET: obtener todos los eventos
     if (req.method === 'GET') {
-        const eventos = leerEventos();
-        return res.status(200).json(eventos);
+        try {
+            const eventos = await leerEventos();
+            return res.status(200).json(eventos);
+        } catch (error) {
+            console.error('Error en GET:', error);
+            return res.status(500).json({ error: 'Error al leer eventos: ' + error.message });
+        }
     }
 
     // POST: agregar evento
@@ -66,13 +343,16 @@ export default function handler(req, res) {
         }
 
         const evento = { fecha, hora, nombre, descripcion, latitud, longitud, enlace };
-        const datos = leerEventos();
-        datos.eventos.push(evento);
 
-        if (guardarEventos(datos)) {
-            return res.status(201).json({ success: true, evento });
-        } else {
-            return res.status(500).json({ error: 'Error al guardar el evento' });
+        try {
+            if (await guardarEvento(evento)) {
+                return res.status(201).json({ success: true, evento });
+            } else {
+                return res.status(500).json({ error: 'Error al guardar el evento' });
+            }
+        } catch (error) {
+            console.error('Error en POST:', error);
+            return res.status(500).json({ error: 'Error al guardar el evento: ' + error.message });
         }
     }
 
@@ -88,17 +368,49 @@ export default function handler(req, res) {
             return res.status(400).json({ error: 'Índice requerido' });
         }
 
-        const datos = leerEventos();
-        if (index < 0 || index >= datos.eventos.length) {
-            return res.status(404).json({ error: 'Evento no encontrado' });
-        }
+        try {
+            // Obtener CSV actual desde GitHub
+            const { content: csvContent, sha } = await obtenerCSVDesdeGitHub();
+            
+            // Parsear el CSV correctamente para reconstruirlo
+            const rows = parseCSV(csvContent);
+            let headers = rows.length > 0 ? Object.keys(rows[0]) : 
+                ['Provincia', 'Ciudad/Localidad', 'Latitud', 'Longitud', 'Enlace a la Noticia', 'tipo', 'fecha', 'hora'];
+            
+            // Asegurar que los headers incluyan fecha y hora
+            if (!headers.includes('fecha')) {
+                headers.push('fecha');
+            }
+            if (!headers.includes('hora')) {
+                headers.push('hora');
+            }
+            
+            // Obtener solo eventos
+            const eventosRows = rows.filter(row => row.tipo && row.tipo.toLowerCase() === 'evento');
+            const otrosRows = rows.filter(row => !row.tipo || row.tipo.toLowerCase() !== 'evento');
+            
+            if (index < 0 || index >= eventosRows.length) {
+                return res.status(404).json({ error: 'Evento no encontrado' });
+            }
+            
+            // Obtener nombre del evento antes de eliminarlo
+            const nombreEvento = eventosRows[index]['Ciudad/Localidad'] || 'evento';
+            
+            // Eliminar el evento
+            eventosRows.splice(index, 1);
+            
+            // Combinar todos los rows (otros primero, luego eventos)
+            const todosLosRows = [...otrosRows, ...eventosRows];
+            
+            // Reconstruir CSV correctamente con todos los campos escapados
+            const nuevoContenido = reconstruirCSV(todosLosRows, headers);
 
-        datos.eventos.splice(index, 1);
-
-        if (guardarEventos(datos)) {
+            // Actualizar en GitHub
+            await actualizarCSVEnGitHub(nuevoContenido, sha, `Eliminar evento: ${nombreEvento}`);
             return res.status(200).json({ success: true });
-        } else {
-            return res.status(500).json({ error: 'Error al eliminar el evento' });
+        } catch (error) {
+            console.error('Error eliminando evento:', error);
+            return res.status(500).json({ error: 'Error al eliminar el evento: ' + error.message });
         }
     }
 

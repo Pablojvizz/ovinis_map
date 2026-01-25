@@ -1,4 +1,4 @@
-Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia,tipo
+Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia,tipo,fecha,hora
 Mina Clavero,Centro de Mina Clavero,-31.72397637,-65.00402092,Referencia central,servicio
 Mina Clavero,Playas del Centro,-31.72525612,-65.00388191,Entre puente central y puente Olmos,balneario
 Mina Clavero,Balneario Municipal,-31.72273685,-65.00502588,Corazon de la ciudad,balneario
@@ -26,3 +26,5 @@ Mina Clavero,Hospital,-31.74266199294605,-64.99881558646055,Hospital Regional Dr
 Mina Clavero,Casino,-31.724086544761434,-65.00144352412835,Casino Mina Clavero,servicio
 Mina Clavero,Resto Punto G,-31.722731939110282,-65.0011593787448,Punto G Bodegon Serrano,restobar
 Mina Clavero,Resto Mallorca,-31.723691701220588,-65.00251122492014,Menú gourmet. comida mediterránea. tragos exquisitos,restobar
+Mina Clavero,LOS TEKIS,-31.7323,-65.0071,"🎟️ Entradas disponibles online y en la boletería del auditorio
+📍 Anfiteatro Municipal de Mina Clavero",evento,2026-01-30,20:00

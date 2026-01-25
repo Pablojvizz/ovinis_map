@@ -51,6 +51,7 @@
         .category-balneario .category-icon { color: #0ea5e9; }
         .category-restobar .category-icon { color: #f59e0b; }
         .category-servicio .category-icon { color: #09ed0c; }
+        .category-evento .category-icon { color: #ef4444; }
         .category-toggle {
             margin-left: auto;
             font-size: 1rem;
@@ -81,6 +82,9 @@
         .destination-item.servicio {
             border-left-color: #09ed0c;
         }
+        .destination-item.evento {
+            border-left-color: #ef4444;
+        }
         /* Ensure Leaflet attribution is visible and readable */
         .leaflet-control-attribution {
             font-size: 10px;
@@ -110,6 +114,9 @@
         }
         .marker-servicio {
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><path d="M12 1c-6 0-11 5-11 11 0 8 11 18 11 18s11-10 11-18c0-6-5-11-11-11z" fill="%2309ed0c" stroke="%23065f46" stroke-width="0.5"/></svg>');
+        }
+        .marker-evento {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 30"><path d="M12 1c-6 0-11 5-11 11 0 8 11 18 11 18s11-10 11-18c0-6-5-11-11-11z" fill="%23ef4444" stroke="%23b91c1c" stroke-width="0.5"/></svg>');
         }
          /* Ensure layout takes full viewport height */
         html, body {
@@ -319,6 +326,85 @@
         .leaflet-popup-content a:hover {
             color: #1d4ed8; /* blue-700 */
         }
+        /* Modal de eventos */
+        .eventos-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .eventos-modal.show {
+            display: flex;
+        }
+        .eventos-modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .eventos-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .eventos-modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .eventos-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .eventos-modal-close:hover {
+            color: #1f2937;
+        }
+        .evento-item {
+            margin: 10px 0;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        .evento-item:hover {
+            background: #e0e0e0;
+            border-left-color: #3b82f6;
+            transform: translateX(4px);
+        }
+        .evento-item h4 {
+            margin: 5px 0;
+            color: #1f2937;
+        }
+        .evento-item p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
     </style>
      <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -345,6 +431,17 @@
 
     <div id="map" class="map-container">
         <button class="menu-toggle-btn" id="menuToggleBtn">☰</button>
+    </div>
+</div>
+
+<!-- Modal de eventos -->
+<div class="eventos-modal" id="eventosModal">
+    <div class="eventos-modal-content">
+        <div class="eventos-modal-header">
+            <h3 class="eventos-modal-title">📅 Proximos Eventos</h3>
+            <button class="eventos-modal-close" id="closeEventosModal">✕</button>
+        </div>
+        <div id="eventosModalBody"></div>
     </div>
 </div>
 
@@ -426,15 +523,79 @@
         if(statusDiv) statusDiv.textContent = '';
     }
 
+    // Función para parsear una línea CSV individual (maneja comillas)
+    function parseCSVLine(line) {
+        const values = [];
+        let currentValue = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    // Comilla escapada
+                    currentValue += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                // Fin del campo
+                values.push(currentValue.trim());
+                currentValue = '';
+            } else {
+                currentValue += char;
+            }
+        }
+        
+        // Agregar el último valor
+        values.push(currentValue.trim());
+        
+        return values;
+    }
+
     // Function to parse CSV text and display data on map
     function loadAndDisplayData(csvText) {
         const locations = [];
-        const lines = csvText.trim().split('\n');
+        // Parsear CSV completo considerando comillas
+        const lines = [];
+        let currentLine = '';
+        let inQuotes = false;
+        
+        // Procesar el texto carácter por carácter para manejar comillas correctamente
+        for (let i = 0; i < csvText.length; i++) {
+            const char = csvText[i];
+            const nextChar = csvText[i + 1];
+            
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    currentLine += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === '\n' && !inQuotes) {
+                if (currentLine.trim()) {
+                    lines.push(currentLine);
+                }
+                currentLine = '';
+            } else {
+                currentLine += char;
+            }
+        }
+        
+        if (currentLine.trim()) {
+            lines.push(currentLine);
+        }
 
         // Parse data (skip header row)
+        const eventos = [];
         for (let i = 0; i < lines.length; i++) {
             if (i === 0 && lines[i].toLowerCase().includes('provincia')) continue;
-            const parts = lines[i].split(',');
+            const parts = parseCSVLine(lines[i]);
+            // Ahora aceptamos 6 o más columnas (puede tener fecha y hora)
             if (parts.length >= 6) {
                 const province = parts[0].trim();
                 const city = parts[1].trim();
@@ -442,14 +603,30 @@
                 const lon = parseFloat(parts[3]);
                 const link = parts[4].trim();
                 const tipo = parts[5].trim().toLowerCase();
+                const fecha = parts.length >= 7 ? parts[6].trim() : '';
+                const hora = parts.length >= 8 ? parts[7].trim() : '';
 
                 if (!isNaN(lat) && !isNaN(lon) && city && province && tipo) {
-                    locations.push({ 
+                    const location = { 
                         name: `${city}, ${province}`, 
                         coords: [lat, lon], 
                         link: link,
                         tipo: tipo 
-                    });
+                    };
+                    locations.push(location);
+                    
+                    // Si es un evento, guardarlo también
+                    if (tipo === 'evento' && fecha && hora) {
+                        eventos.push({
+                            fecha: fecha,
+                            hora: hora,
+                            nombre: city,
+                            descripcion: link,
+                            latitud: lat,
+                            longitud: lon,
+                            enlace: link
+                        });
+                    }
                 } else {
                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
                 }
@@ -458,6 +635,11 @@
                     console.warn(`Skipping malformed row ${i + 1}: ${lines[i]}`);
                  }
             }
+        }
+        
+        // Cargar eventos después de parsear el CSV
+        if (eventos.length > 0) {
+            cargarEventosDesdeArray(eventos);
         }
 
         if (locations.length === 0) {
@@ -475,7 +657,8 @@
         const categorized = {
             balneario: [],
             restobar: [],
-            servicio: []
+            servicio: [],
+            evento: []
         };
 
         locations.forEach(loc => {
@@ -488,7 +671,8 @@
         const categoryInfo = [
             { key: 'balneario', title: 'Balnearios', icon: '🏖️' },
             { key: 'restobar', title: 'Bares-Restaurantes', icon: '🍽️' },
-            { key: 'servicio', title: 'Servicios', icon: '🏢' }
+            { key: 'servicio', title: 'Servicios', icon: '🏢' },
+            { key: 'evento', title: 'Eventos', icon: '📅' }
         ];
 
         categoryInfo.forEach(cat => {
@@ -562,18 +746,10 @@
         }
     }
 
-    // --- Cargar eventos desde la API ---
-    async function cargarEventos() {
+    // --- Cargar eventos desde un array (extraídos del CSV) ---
+    function cargarEventosDesdeArray(eventos) {
         try {
-            console.log('Iniciando cargarEventos()...');
-            const response = await fetch('./api/eventos.php');
-            if (!response.ok) {
-                console.warn('No se pudieron cargar los eventos:', response.status);
-                return;
-            }
-            const data = await response.json();
-            const eventos = data.eventos || [];
-            console.log('Eventos cargados:', eventos);
+            console.log('Eventos cargados desde CSV:', eventos);
 
             // Obtener fecha de hoy en formato YYYY-MM-DD (sin considerar zona horaria)
             const hoy = new Date();
@@ -596,7 +772,36 @@
                 console.log('No hay eventos válidos para mostrar');
             }
         } catch (error) {
-            console.error('Error al cargar eventos:', error);
+            console.error('Error al procesar eventos:', error);
+        }
+    }
+    
+    // --- Cargar eventos desde la API (fallback) ---
+    async function cargarEventos() {
+        try {
+            console.log('Iniciando cargarEventos() desde API...');
+            // Intentar diferentes rutas según el entorno
+            let response;
+            try {
+                response = await fetch('./api/eventos');
+            } catch (e) {
+                try {
+                    response = await fetch('./api/eventos.js');
+                } catch (e2) {
+                    console.log('No se pudo conectar a la API de eventos, usando eventos del CSV');
+                    return;
+                }
+            }
+            if (!response.ok) {
+                console.warn('No se pudieron cargar los eventos desde API:', response.status);
+                return;
+            }
+            const data = await response.json();
+            const eventos = data.eventos || [];
+            console.log('Eventos cargados desde API:', eventos);
+            cargarEventosDesdeArray(eventos);
+        } catch (error) {
+            console.error('Error al cargar eventos desde API:', error);
         }
     }
 
@@ -614,38 +819,70 @@
 
         console.log('Iniciando mostrarPopupEventos con', eventos.length, 'eventos');
 
-        // Crear contenido del popup
-        let contenido = '<div style="max-width: 300px; text-align: center;">';
-        contenido += '<h3 style="margin: 10px 0; font-size: 18px; font-weight: bold;">📅 Eventos de Hoy</h3>';
-        contenido += '<div style="text-align: left; font-size: 12px;">';
+        const modal = document.getElementById('eventosModal');
+        const modalBody = document.getElementById('eventosModalBody');
+        
+        // Limpiar contenido anterior
+        modalBody.innerHTML = '';
 
+        // Crear contenido de eventos
         eventos.forEach((evento, index) => {
-            console.log(`Agregando evento al popup: ${evento.nombre}`);
-            contenido += `<div style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">`;
-            contenido += `<p style="margin: 5px 0;"><strong>${evento.nombre}</strong> (${evento.hora})</p>`;
-            // Convertir saltos de línea \n a <br> para mostrar correctamente
+            console.log(`Agregando evento al modal: ${evento.nombre}`);
+            
+            const eventoDiv = document.createElement('div');
+            eventoDiv.className = 'evento-item';
+            eventoDiv.onclick = () => {
+                // Navegar al destino en el mapa
+                if (evento.latitud && evento.longitud) {
+                    map.flyTo([evento.latitud, evento.longitud], 18);
+                }
+                // Cerrar el modal
+                modal.classList.remove('show');
+            };
+            
             const descripcionFormateada = evento.descripcion.replace(/\n/g, '<br>');
-            contenido += `<p style="margin: 5px 0; font-size: 11px;">${descripcionFormateada}</p>`;
-            if (evento.enlace) {
-                contenido += `<p style="margin: 5px 0;"><a href="${evento.enlace}" target="_blank" rel="noopener noreferrer" style="color: #0ea5e9; text-decoration: underline;">Ver más</a></p>`;
-            }
-            contenido += `</div>`;
+            
+            eventoDiv.innerHTML = `
+                <h4>${evento.nombre}</h4>
+                <p><strong>Hora:</strong> ${evento.hora}</p>
+                <p>${descripcionFormateada}</p>
+                ${evento.enlace ? `<p><a href="${evento.enlace}" target="_blank" rel="noopener noreferrer" style="color: #0ea5e9; text-decoration: underline;" onclick="event.stopPropagation();">Ver más</a></p>` : ''}
+            `;
+            
+            modalBody.appendChild(eventoDiv);
         });
 
-        contenido += '</div></div>';
+        // Mostrar modal
+        modal.classList.add('show');
+        
+        console.log('Modal abierto exitosamente');
+    }
 
-        console.log('Contenido del popup creado, abriendo popup en mapa');
+    // Inicializar event listeners del modal cuando el DOM esté listo
+    function inicializarModal() {
+        const closeBtn = document.getElementById('closeEventosModal');
+        const modal = document.getElementById('eventosModal');
         
-        // Mostrar popup en el centro del mapa
-        const popup = L.popup({
-            maxWidth: 350,
-            className: 'custom-event-popup'
-        })
-        .setLatLng(map.getCenter())
-        .setContent(contenido)
-        .openOn(map);
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+        }
         
-        console.log('Popup abierto exitosamente');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target.id === 'eventosModal') {
+                    modal.classList.remove('show');
+                }
+            });
+        }
+    }
+    
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarModal);
+    } else {
+        inicializarModal();
     }
 
     // --- Initialization ---
@@ -711,10 +948,8 @@
             .then(csvText => {
                 // File loaded successfully, process it
                 clearMapData(); // Clear any previous data (though unlikely needed on initial load)
-                loadAndDisplayData(csvText); // Process the new data
+                loadAndDisplayData(csvText); // Process the new data (esto ya carga los eventos del CSV)
                 console.log("CSV data loaded and processed successfully via fetch.");
-                // Cargar eventos después de cargar los datos de ubicaciones
-                cargarEventos();
             })
             .catch(fetchError => {
                 // Handle errors during fetch (network error, file not found, etc.)

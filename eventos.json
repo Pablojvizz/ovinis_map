@@ -8,6 +8,15 @@
             "latitud": -31.7274,
             "longitud": -65.0043,
             "enlace": ""
+        },
+        {
+            "fecha": "2026-01-25",
+            "hora": "21:00",
+            "nombre": "De Gustar",
+            "descripcion": "🍔🌮 Puestos gastronómicos con opciones para todos los gustos\n📍 Plaza de los Niños – Los Tilos esq. Riegé\n🗓️ Domingo 25 de enero\n🕘 21:00 hs",
+            "latitud": -31.725,
+            "longitud": -65.0098,
+            "enlace": ""
         }
     ]
 }

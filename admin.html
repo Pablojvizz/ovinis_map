@@ -378,12 +378,18 @@
             loginForm.reset();
         });
         
+        // Detectar si estamos en local o producción
+        const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:3000/api/eventos'
+            : '/api/eventos';
+        
         // Cargar eventos desde la API
         async function cargarEventos() {
             try {
-                const response = await fetch('./api/eventos.php');
+                const response = await fetch(API_BASE_URL);
                 if (!response.ok) {
-                    throw new Error('No se pudieron cargar los eventos');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'No se pudieron cargar los eventos');
                 }
                 
                 const data = await response.json();
@@ -398,10 +404,13 @@
                 eventos.forEach((evento, index) => {
                     const eventDiv = document.createElement('div');
                     eventDiv.className = 'event-item';
+                    // Convertir saltos de línea \n a <br> para mostrar correctamente
+                    const descripcionFormateada = (evento.descripcion || '').replace(/\n/g, '<br>');
+                    
                     eventDiv.innerHTML = `
                         <h3>${evento.nombre}</h3>
                         <p><strong>Fecha:</strong> ${evento.fecha} a las ${evento.hora}</p>
-                        <p><strong>Descripción:</strong> ${evento.descripcion}</p>
+                        <p><strong>Descripción:</strong> ${descripcionFormateada}</p>
                         <p><strong>Ubicación:</strong> (${evento.latitud}, ${evento.longitud})</p>
                         ${evento.enlace ? `<p><strong>Enlace:</strong> <a href="${evento.enlace}" target="_blank">${evento.enlace}</a></p>` : ''}
                         <div class="event-meta">
@@ -413,7 +422,7 @@
                 });
             } catch (error) {
                 console.error('Error al cargar eventos:', error);
-                mostrarError('Error al cargar los eventos');
+                mostrarError('Error al cargar los eventos: ' + error.message);
             }
         }
         
@@ -425,14 +434,14 @@
                 fecha: document.getElementById('eventFecha').value,
                 hora: document.getElementById('eventHora').value,
                 nombre: document.getElementById('eventNombre').value,
-                descripcion: document.getElementById('eventDescripcion').value,
+                descripcion: '"' + document.getElementById('eventDescripcion').value + '"',
                 latitud: parseFloat(document.getElementById('eventLatitud').value),
                 longitud: parseFloat(document.getElementById('eventLongitud').value),
                 enlace: document.getElementById('eventEnlace').value || ''
             };
             
             try {
-                const response = await fetch('./api/eventos.php', {
+                const response = await fetch(API_BASE_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -462,7 +471,7 @@
             }
             
             try {
-                const response = await fetch('./api/eventos.php', {
+                const response = await fetch(API_BASE_URL, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
