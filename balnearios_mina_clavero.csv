@@ -1,30 +1,33 @@
 Provincia,Ciudad/Localidad,Latitud,Longitud,Enlace a la Noticia,tipo,fecha,hora
-Mina Clavero,Centro de Mina Clavero,-31.72397637,-65.00402092,Referencia central,servicio
-Mina Clavero,Playas del Centro,-31.72525612,-65.00388191,Entre puente central y puente Olmos,balneario
-Mina Clavero,Balneario Municipal,-31.72273685,-65.00502588,Corazon de la ciudad,balneario
-Mina Clavero,La Residencia,-31.72504786,-64.9960485,900m del puente central,balneario
-Mina Clavero,Nido del Aguila,-31.72525693,-64.99248032,15 cuadras del centro - calle Urquiza,balneario
-Mina Clavero,Las Calaveras,-31.72079908,-64.98645008,Cerca de Nido del Aguila,balneario
-Mina Clavero,La Toma,-31.71277434,-64.96865801,Camino de los Artesanos,balneario
-Mina Clavero,Los Elefantes,-31.72243598,-65.01207255,Rio Los Sauces - Av Costanera,balneario
-Mina Clavero,Los Cajones,-31.71938138,-65.00886951,Rio Los Sauces,balneario
-Panaholma,Balneareo Panaholma,-31.63442945,-65.05401256,Aguas tibias,balneario
-San Lorenzo,Cascada Toro Muerto,-31.64449696,-64.99034611,Camino de los Artesanos,balneario
-San Lorenzo,Quebrada del Toro Muerto,-31.64790179,-64.97906834,Olmos Sur 1303,balneario
-Mina Clavero,La toma vieja,-31.72213848,-64.98797549,Antes de las calaveras,balneario
-Mina Clavero,Toboganes Naturales,-31.71329103,-64.96869327,En La Toma,balneario
-Cura Brochero,Los cedros,-31.71278999,-65.00713723,Balneareo los cedros,balneario
-Cura Brochero,Balneario Municipal,-31.70021314,-65.01732133,Balneario Municipal de Villa Cura Brochero,balneario
-Mina Clavero,El Baño de los Dioses,-31.74540552,-64.93341226,R34 camino altas cumbres,balneario
-Mina Clavero,Balneareo Abuela Teresa,-31.65770467,-64.94799413,R14 Av. Libertad,balneario
-Mina Clavero,Nacimiento del Rio Mina Clavero,-31.70896824,-64.89796299,R34 camino altas cumbres,balneario
-Mina Clavero,Playa Los Tiroleses,-31.73435168,-65.01192624,una costanera muy linda para salir a correr. andar en bici o caminar,balneario
-Mina Clavero,Winka,-31.72588809,-65.00335171,Cena show - hamburgesas - tragos,restobar
-Mina Clavero,YPF,-31.729780804088517,-65.00529524076546,Estacion de Servicios,servicio
-Mina Clavero,Supermercado Top,-31.731212830826028,-65.00500369766627,Centro comercial,servicio
-Mina Clavero,Hospital,-31.74266199294605,-64.99881558646055,Hospital Regional Dr. Luis María Bellodi,servicio
-Mina Clavero,Casino,-31.724086544761434,-65.00144352412835,Casino Mina Clavero,servicio
-Mina Clavero,Resto Punto G,-31.722731939110282,-65.0011593787448,Punto G Bodegon Serrano,restobar
-Mina Clavero,Resto Mallorca,-31.723691701220588,-65.00251122492014,Menú gourmet. comida mediterránea. tragos exquisitos,restobar
+Mina Clavero,Centro de Mina Clavero,-31.72397637,-65.00402092,Referencia central,servicio,,
+Mina Clavero,Playas del Centro,-31.72525612,-65.00388191,Entre puente central y puente Olmos,balneario,,
+Mina Clavero,Balneario Municipal,-31.72273685,-65.00502588,Corazon de la ciudad,balneario,,
+Mina Clavero,La Residencia,-31.72504786,-64.9960485,900m del puente central,balneario,,
+Mina Clavero,Nido del Aguila,-31.72525693,-64.99248032,15 cuadras del centro - calle Urquiza,balneario,,
+Mina Clavero,Las Calaveras,-31.72079908,-64.98645008,Cerca de Nido del Aguila,balneario,,
+Mina Clavero,La Toma,-31.71277434,-64.96865801,Camino de los Artesanos,balneario,,
+Mina Clavero,Los Elefantes,-31.72243598,-65.01207255,Rio Los Sauces - Av Costanera,balneario,,
+Mina Clavero,Los Cajones,-31.71938138,-65.00886951,Rio Los Sauces,balneario,,
+Panaholma,Balneareo Panaholma,-31.63442945,-65.05401256,Aguas tibias,balneario,,
+San Lorenzo,Cascada Toro Muerto,-31.64449696,-64.99034611,Camino de los Artesanos,balneario,,
+San Lorenzo,Quebrada del Toro Muerto,-31.64790179,-64.97906834,Olmos Sur 1303,balneario,,
+Mina Clavero,La toma vieja,-31.72213848,-64.98797549,Antes de las calaveras,balneario,,
+Mina Clavero,Toboganes Naturales,-31.71329103,-64.96869327,En La Toma,balneario,,
+Cura Brochero,Los cedros,-31.71278999,-65.00713723,Balneareo los cedros,balneario,,
+Cura Brochero,Balneario Municipal,-31.70021314,-65.01732133,Balneario Municipal de Villa Cura Brochero,balneario,,
+Mina Clavero,El Baño de los Dioses,-31.74540552,-64.93341226,R34 camino altas cumbres,balneario,,
+Mina Clavero,Balneareo Abuela Teresa,-31.65770467,-64.94799413,R14 Av. Libertad,balneario,,
+Mina Clavero,Nacimiento del Rio Mina Clavero,-31.70896824,-64.89796299,R34 camino altas cumbres,balneario,,
+Mina Clavero,Playa Los Tiroleses,-31.73435168,-65.01192624,una costanera muy linda para salir a correr. andar en bici o caminar,balneario,,
+Mina Clavero,Winka,-31.72588809,-65.00335171,Cena show - hamburgesas - tragos,restobar,,
+Mina Clavero,YPF,-31.729780804088517,-65.00529524076546,Estacion de Servicios,servicio,,
+Mina Clavero,Supermercado Top,-31.731212830826028,-65.00500369766627,Centro comercial,servicio,,
+Mina Clavero,Hospital,-31.74266199294605,-64.99881558646055,Hospital Regional Dr. Luis María Bellodi,servicio,,
+Mina Clavero,Casino,-31.724086544761434,-65.00144352412835,Casino Mina Clavero,servicio,,
+Mina Clavero,Resto Punto G,-31.722731939110282,-65.0011593787448,Punto G Bodegon Serrano,restobar,,
+Mina Clavero,Resto Mallorca,-31.723691701220588,-65.00251122492014,Menú gourmet. comida mediterránea. tragos exquisitos,restobar,,
 Mina Clavero,LOS TEKIS,-31.7323,-65.0071,"🎟️ Entradas disponibles online y en la boletería del auditorio
 📍 Anfiteatro Municipal de Mina Clavero",evento,2026-01-30,20:00
+Mina Clavero,De Gustar,-31.7249,-65.0098,"""📍 Plaza de los Niños – Los Tilos esq. Riegé
+🗓️ Domingo 25 de enero
+🕘 21:00 hs""",evento,2026-01-25,21:00
